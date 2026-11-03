@@ -12,7 +12,10 @@
   }
 
   function show(text) {
-    const c = Card.readText(text, window.parseEmail);
+    fill(Card.readText(text, window.parseEmail));
+  }
+
+  function fill(c) {
     $('name').value = c.name;
     $('phone').value = (c.phones[0] || {}).number || '';
     $('phone2').value = (c.phones[1] || {}).number || '';
@@ -87,9 +90,18 @@
   const fromQuery = new URLSearchParams(location.search);
   const fromHash = new URLSearchParams(location.hash.slice(1));
   const shared = [fromQuery.get('title'), fromQuery.get('text'), fromQuery.get('url'), fromHash.get('text')].filter(Boolean).join('\n');
-  if (shared.trim()) {
-    $('text').value = shared;
-    show(shared);
+  // The Outlook button sends the details it has already read as #card={…}.
+  let given = null;
+  try { given = fromHash.get('card') ? JSON.parse(fromHash.get('card')) : null; } catch (e) { given = null; }
+  if (given || shared.trim()) {
+    if (given) {
+      const text = (key) => String(given[key] || '').slice(0, 200);
+      fill({ name: text('name') || text('email'), email: text('email'), title: text('title'), company: text('company'),
+        phones: (Array.isArray(given.phones) ? given.phones : []).slice(0, 2).map((p) => ({ label: String(p.label || 'mobile'), number: String(p.number || '').slice(0, 40) })) });
+    } else {
+      $('text').value = shared;
+      show(shared);
+    }
     history.replaceState(null, '', location.pathname);
     const card = current();
     if (!Card.problem(card)) setStatus(save(card));

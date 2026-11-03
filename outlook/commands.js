@@ -1,12 +1,13 @@
-/* Email to Contacts for Outlook: the one-click button. Reads the open email's sender and signature,
-   saves them to Google Contacts (signing in to Google the first time), and says what happened in a
-   line above the email. No pane opens. */
+/* Email to Contacts for Outlook: the one-click button. Reads the open email's sender and signature
+   and opens the Email to Contacts page in the browser with those details, which saves them as a
+   contact card on the computer. No sign-in, and the details travel only in the part of the address
+   after #, which browsers never send to the web server. */
 (function () {
   'use strict';
 
   const Core = window.EmailToContacts;
-  const Google = window.EmailToContactsGoogle;
-  let auth = null;
+  // The page that turns the details into a contact card: ../app/ next to this add-in.
+  const CARD_PAGE = new URL('../app/', location.href).href;
 
   function getBody(item, type) {
     return new Promise((resolve) => {
@@ -30,6 +31,11 @@
     });
   }
 
+  function cardUrl(d) {
+    const card = { name: d.name, email: d.email, title: d.title, company: d.company, phones: d.phones };
+    return CARD_PAGE + '#card=' + encodeURIComponent(JSON.stringify(card));
+  }
+
   async function saveSender(event) {
     const item = Office.context.mailbox.item;
     try {
@@ -40,12 +46,10 @@
       } else if (!d.name && !d.email) {
         await tell(item, 'No name or email address was found in this email.', true);
       } else {
-        const token = await auth.getToken(true);
-        const result = await Google.saveContact(Google.googleClient(token, fetch.bind(window), () => auth.forget()), d);
-        const who = d.name || d.email;
-        await tell(item, result.status === 'exists'
-          ? who + ' is already in your contacts.'
-          : 'Saved ' + who + ' to your contacts' + (d.phones.length ? ' with their phone number' : '') + '. It will appear on your phone shortly.');
+        const url = cardUrl(d);
+        if (Office.context.ui.openBrowserWindow) Office.context.ui.openBrowserWindow(url);
+        else window.open(url, '_blank', 'noopener');
+        await tell(item, 'Contact card for ' + (d.name || d.email) + ' saved. Open it from your downloads to add them to your contacts.');
       }
     } catch (err) {
       await tell(item, 'Could not save: ' + err.message, true);
@@ -54,13 +58,6 @@
   }
 
   Office.onReady(() => {
-    auth = Google.createGoogleAuth({
-      Office: Office,
-      dialogUrl: new URL('google-dialog.html', location.href).href,
-      session: window.sessionStorage,
-      local: window.localStorage,
-      fetchImpl: fetch.bind(window),
-    });
     if (Office.actions && Office.actions.associate) Office.actions.associate('saveSender', saveSender);
   });
   // Outlook looks the function up by name.
