@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Email to Contacts</title>
+  <meta name="description" content="Copy a signature from any email and save the person to your phone's contacts.">
+  <meta name="theme-color" content="#0f6cbd">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="To Contacts">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <style>
+    :root { --text: #1f1f1f; --muted: #5f6368; --line: #c4c7c5; --accent: #0f6cbd; --bg: #ffffff; --soft: #f1f4f8; --error: #a4262c; }
+    @media (prefers-color-scheme: dark) { :root { --text: #e8eaed; --muted: #b0b3b8; --line: #5f6368; --accent: #4f9bf0; --bg: #17181a; --soft: #24262a; --error: #f1707b; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 520px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 16px 32px; }
+    h1 { font-size: 22px; margin: 4px 0 2px; }
+    .lead { color: var(--muted); margin: 0 0 16px; font-size: 15px; }
+    button { font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 14px 18px; width: 100%; cursor: pointer; }
+    .primary { background: var(--accent); color: #fff; }
+    .secondary { background: var(--soft); color: var(--text); }
+    .row { display: flex; gap: 10px; margin-bottom: 12px; }
+    textarea { width: 100%; min-height: 110px; font: inherit; font-size: 15px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--text); }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+    input { display: block; width: 100%; font: inherit; padding: 12px; margin-top: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); }
+    .card { margin-top: 18px; padding: 4px 0 0; }
+    .status { margin: 12px 0 0; color: var(--muted); font-size: 15px; }
+    .status.error { color: var(--error); }
+    .help { margin-top: 28px; font-size: 14px; color: var(--muted); }
+    .help h2 { font-size: 15px; color: var(--text); margin: 18px 0 6px; }
+    .help ol { padding-left: 20px; margin: 0; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Email to Contacts</h1>
+    <p class="lead">Copy the person's signature from any email, paste it here, and save them to your phone's contacts.</p>
+
+    <div class="row">
+      <button id="paste" class="primary" type="button">Paste from email</button>
+    </div>
+    <textarea id="text" placeholder="Or type or paste the signature here" aria-label="Email text"></textarea>
+
+    <form id="card" class="card" hidden>
+      <label>Name <input id="name" autocomplete="off"></label>
+      <label>Mobile / phone <input id="phone" type="tel" autocomplete="off"></label>
+      <label>Other phone <input id="phone2" type="tel" autocomplete="off"></label>
+      <label>Email <input id="email" type="email" autocomplete="off"></label>
+      <label>Job title <input id="title" autocomplete="off"></label>
+      <label>Company <input id="company" autocomplete="off"></label>
+      <p></p>
+      <button id="save" class="primary" type="submit">Save to contacts</button>
+      <p id="status" class="status" hidden></p>
+      <button id="again" class="secondary" type="button" style="margin-top:12px">Start again</button>
+    </form>
+
+    <section class="help">
+      <h2>iPhone</h2>
+      <ol>
+        <li>In your email app, press and hold the signature, then <strong>Copy</strong>.</li>
+        <li>Open this page and tap <strong>Paste from email</strong>, then <strong>Save to contacts</strong>.</li>
+        <li>Tap <strong>Create New Contact</strong> (or <strong>Add to Contacts</strong>).</li>
+      </ol>
+      <p>Tip: tap the Share button in Safari, then <strong>Add to Home Screen</strong>, to keep it one tap away.</p>
+      <h2>Android</h2>
+      <ol>
+        <li>Open this page in Chrome once and choose <strong>Add to Home screen</strong> (or Install app).</li>
+        <li>In your email app, select the signature, tap <strong>Share</strong>, and choose <strong>Email to Contacts</strong>.</li>
+        <li>Tap <strong>Save to contacts</strong>, then open the file to add the contact.</li>
+      </ol>
+      <h2>Private</h2>
+      <p>Everything happens on your phone. Nothing you paste is sent anywhere.</p>
+    </section>
+  </main>
+  <script src="parser.js"></script>
+  <script src="contact.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

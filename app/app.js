@@ -1,0 +1,96 @@
+/* Email to Contacts web app: the page. Paste or share email text, check the card, save as a contact. */
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const Card = window.ContactCard;
+  const FIELDS = ['name', 'phone', 'phone2', 'email', 'title', 'company'];
+
+  function setStatus(text, isError) {
+    $('status').textContent = text;
+    $('status').className = 'status' + (isError ? ' error' : '');
+    $('status').hidden = !text;
+  }
+
+  function show(text) {
+    const c = Card.readText(text, window.parseEmail);
+    $('name').value = c.name;
+    $('phone').value = (c.phones[0] || {}).number || '';
+    $('phone2').value = (c.phones[1] || {}).number || '';
+    $('email').value = c.email;
+    $('title').value = c.title;
+    $('company').value = c.company;
+    $('phone').dataset.label = (c.phones[0] || {}).label || 'mobile';
+    $('phone2').dataset.label = (c.phones[1] || {}).label || 'work';
+    $('card').hidden = false;
+    setStatus(c.name || c.email || c.phones.length ? '' : 'Nothing found to save. Check the text, or type the details in.');
+  }
+
+  function current() {
+    const v = (id) => $(id).value.trim();
+    return {
+      name: v('name'), email: v('email'), title: v('title'), company: v('company'),
+      phones: [{ label: $('phone').dataset.label || 'mobile', number: v('phone') }, { label: $('phone2').dataset.label || 'work', number: v('phone2') }].filter((p) => p.number),
+    };
+  }
+
+  // iPhone and iPad open a vCard link as a "Create New Contact" screen; other phones download the
+  // file, and opening it adds the contact.
+  function save(card) {
+    const vcard = Card.buildVCard(card);
+    const url = URL.createObjectURL(new Blob([vcard], { type: 'text/vcard' }));
+    const isApple = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isApple) {
+      window.location.href = url;
+      return 'If nothing opened, tap Save to contacts again.';
+    }
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = Card.fileName(card);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    return 'Saved as a contact file. Open it (from the notification or Downloads) to add the contact.';
+  }
+
+  $('paste').addEventListener('click', async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text.trim()) return setStatus('Nothing copied yet. Copy the signature in your email app first.', true);
+      $('text').value = text;
+      show(text);
+    } catch (e) {
+      $('text').focus();
+      setStatus('Your phone did not allow pasting here. Press and hold in the box above, then Paste.', true);
+      $('card').hidden = false;
+    }
+  });
+  $('text').addEventListener('input', () => { if ($('text').value.trim()) show($('text').value); });
+  $('card').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const card = current();
+    const problem = Card.problem(card);
+    if (problem) return setStatus(problem, true);
+    setStatus(save(card));
+  });
+  $('again').addEventListener('click', () => {
+    $('text').value = '';
+    FIELDS.forEach((id) => { $(id).value = ''; });
+    $('card').hidden = true;
+    setStatus('');
+    window.scrollTo(0, 0);
+  });
+
+  // Shared from another app (Android "Share" to the installed app) arrives as ?text=… or ?title=….
+  const params = new URLSearchParams(location.search);
+  const shared = [params.get('title'), params.get('text'), params.get('url')].filter(Boolean).join('\n');
+  if (shared.trim()) {
+    $('text').value = shared;
+    show(shared);
+    history.replaceState(null, '', location.pathname);
+  }
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+  window.EmailToContactsApp = { show, current };
+})();
