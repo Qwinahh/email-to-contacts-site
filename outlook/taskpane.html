@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Email to Contacts</title>
+  <link rel="stylesheet" href="taskpane.css">
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <script src="config.js"></script>
+  <script src="parser.js"></script>
+  <script src="contact-core.js"></script>
+  <script src="google.js"></script>
+  <script src="taskpane.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Save to contacts</h1>
+    <p id="status" class="status">Reading the email…</p>
+
+    <form id="details" hidden>
+      <p id="note" class="note" hidden></p>
+      <label>Name <input id="name" autocomplete="off"></label>
+      <label>Email <input id="email" type="email" autocomplete="off"></label>
+      <div id="phones"></div>
+      <label>Job title <input id="title" autocomplete="off"></label>
+      <label>Company <input id="company" autocomplete="off"></label>
+      <button id="save" type="submit">Save to contacts</button>
+    </form>
+
+    <section id="done" hidden>
+      <p><strong id="done-name"></strong></p>
+      <p id="done-message"></p>
+      <p><a id="done-link" target="_blank" rel="noopener" hidden>Open contact</a></p>
+    </section>
+  </main>
+</body>
+</html>

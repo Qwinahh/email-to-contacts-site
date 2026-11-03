@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Email to Contacts for Outlook. https://qwinahh.github.io/email-to-contacts-site/outlook is replaced by the hosting address when building (node outlook-addin/build.js). -->
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
+           xsi:type="MailApp">
+  <Id>d0bb3bca-02f2-4300-a94b-c41159feaaa7</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>Email to Contacts</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="Email to Contacts"/>
+  <Description DefaultValue="Save the sender of the open email to your contacts, with the phone number, job title and company from their signature."/>
+  <IconUrl DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/assets/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/assets/icon-128.png"/>
+  <SupportUrl DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/support.html"/>
+  <AppDomains>
+    <AppDomain>https://accounts.google.com</AppDomain>
+  </AppDomains>
+  <Hosts>
+    <Host Name="Mailbox"/>
+  </Hosts>
+  <Requirements>
+    <Sets>
+      <Set Name="Mailbox" MinVersion="1.1"/>
+    </Sets>
+  </Requirements>
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/taskpane.html"/>
+        <RequestedHeight>250</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+  <Permissions>ReadItem</Permissions>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+  </Rule>
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1" xsi:type="VersionOverridesV1_1">
+      <Requirements>
+        <bt:Sets DefaultMinVersion="1.5">
+          <bt:Set Name="Mailbox"/>
+        </bt:Sets>
+      </Requirements>
+      <Hosts>
+        <Host xsi:type="MailHost">
+          <DesktopFormFactor>
+            <ExtensionPoint xsi:type="MessageReadCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="msgReadGroup">
+                  <Label resid="GroupLabel"/>
+                  <Control xsi:type="Button" id="msgReadOpenPaneButton">
+                    <Label resid="TaskpaneButton.Label"/>
+                    <Supertip>
+                      <Title resid="TaskpaneButton.Label"/>
+                      <Description resid="TaskpaneButton.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16"/>
+                      <bt:Image size="32" resid="Icon.32"/>
+                      <bt:Image size="80" resid="Icon.80"/>
+                    </Icon>
+                    <Action xsi:type="ShowTaskpane">
+                      <SourceLocation resid="Taskpane.Url"/>
+                      <SupportsPinning>true</SupportsPinning>
+                    </Action>
+                  </Control>
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
+          </DesktopFormFactor>
+          <MobileFormFactor>
+            <ExtensionPoint xsi:type="MobileMessageReadCommandSurface">
+              <Group id="mobileMsgReadGroup">
+                <Label resid="GroupLabel"/>
+                <Control xsi:type="MobileButton" id="mobileOpenPaneButton">
+                  <Label resid="TaskpaneButton.Label"/>
+                  <Icon xsi:type="bt:MobileIconList">
+                    <bt:Image size="25" scale="1" resid="Icon.25"/>
+                    <bt:Image size="25" scale="2" resid="Icon.25"/>
+                    <bt:Image size="25" scale="3" resid="Icon.25"/>
+                    <bt:Image size="32" scale="1" resid="Icon.32"/>
+                    <bt:Image size="32" scale="2" resid="Icon.32"/>
+                    <bt:Image size="32" scale="3" resid="Icon.32"/>
+                    <bt:Image size="48" scale="1" resid="Icon.48"/>
+                    <bt:Image size="48" scale="2" resid="Icon.48"/>
+                    <bt:Image size="48" scale="3" resid="Icon.48"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="Taskpane.Url"/>
+                  </Action>
+                </Control>
+              </Group>
+            </ExtensionPoint>
+          </MobileFormFactor>
+        </Host>
+      </Hosts>
+      <Resources>
+        <bt:Images>
+          <bt:Image id="Icon.16" DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/assets/icon-16.png"/>
+          <bt:Image id="Icon.25" DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/assets/icon-25.png"/>
+          <bt:Image id="Icon.32" DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/assets/icon-32.png"/>
+          <bt:Image id="Icon.48" DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/assets/icon-48.png"/>
+          <bt:Image id="Icon.80" DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/assets/icon-80.png"/>
+        </bt:Images>
+        <bt:Urls>
+          <bt:Url id="Taskpane.Url" DefaultValue="https://qwinahh.github.io/email-to-contacts-site/outlook/taskpane.html"/>
+        </bt:Urls>
+        <bt:ShortStrings>
+          <bt:String id="GroupLabel" DefaultValue="Email to Contacts"/>
+          <bt:String id="TaskpaneButton.Label" DefaultValue="Save to contacts"/>
+        </bt:ShortStrings>
+        <bt:LongStrings>
+          <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Save the sender's name, email, phone, job title and company to your contacts."/>
+        </bt:LongStrings>
+      </Resources>
+    </VersionOverrides>
+  </VersionOverrides>
+</OfficeApp>
