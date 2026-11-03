@@ -27,7 +27,7 @@
       const hint = read(env.local, 'googleAccount');
       const url = env.dialogUrl + (hint ? '?hint=' + encodeURIComponent(hint) : '');
       return new Promise((resolve, reject) => {
-        env.Office.context.ui.displayDialogAsync(url, { height: 70, width: 40, promptBeforeOpen: false }, (res) => {
+        env.Office.context.ui.displayDialogAsync(url, { height: 70, width: 40 }, (res) => {
           if (res.status !== 'succeeded') return reject(new Error('The Google sign-in window could not open: ' + ((res.error && res.error.message) || res.status)));
           const dialog = res.value;
           dialog.addEventHandler(env.Office.EventType.DialogMessageReceived, (arg) => {
