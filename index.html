@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Email to Contacts</title>
-  <meta name="description" content="Save the sender of an email to your phone's contacts in one click, with the phone number, job title and company from their signature.">
+  <meta name="description" content="Save the sender of an email to your contacts in one click, with the phone number, job title and company from their signature. Free, no account.">
   <link rel="icon" href="icon-128.png">
   <link rel="stylesheet" href="site.css">
 </head>
@@ -12,28 +12,74 @@
   <main>
     <p><img src="icon-128.png" alt="" width="64" height="64"></p>
     <h1>Email to Contacts</h1>
-    <p class="lead">Save the sender of an email to your phone's contacts in one click.</p>
+    <p class="lead">Save the sender of an email to your contacts in one click: name, email, phone, job title and company, read from their signature. Free, no account, nothing sent anywhere.</p>
 
-    <h2>How it works</h2>
-    <ol>
-      <li>Open an email. A <strong>Save to contacts</strong> button appears beside it.</li>
-      <li>Check the details read from their signature: name, email, phone, job title and company. Edit anything you like.</li>
-      <li>Click <strong>Save</strong>. The contact goes into your Google Contacts, and your phone shows it by itself.</li>
-    </ol>
-    <p>Nothing is saved unless you click, and it never saves the same person twice.</p>
+    <p class="for" id="for" hidden></p>
 
-    <h2>Where it works</h2>
-    <ul>
-      <li><strong>Browser extension</strong> (Chrome and Edge): Gmail, Outlook on the web and iCloud Mail, plus any other email website by selecting the signature.</li>
-      <li><strong>Gmail add-on</strong>: Gmail on the web and in the Gmail app on Android and iPhone.</li>
-    </ul>
-    <p>Phones: Android shows Google contacts automatically. On iPhone, turn on Contacts for your Google account in Settings.</p>
+    <section class="setup" data-device="iphone">
+      <h2>iPhone</h2>
+      <p id="shortcut-ready" hidden><a class="button" id="shortcut-link" href="#">Add the Save to Contacts button</a><br>Then tap <strong>Add Shortcut</strong>.</p>
+      <p id="shortcut-later" class="muted">The iPhone button is being finished. For now, open <a href="app/">the app</a> and tap <strong>Paste from email</strong>.</p>
+      <p><strong>To use it:</strong> in any email app, press and hold the signature, select it, tap <strong>Share</strong>, then <strong>Save to Contacts</strong>.</p>
+    </section>
 
-    <h2>Privacy</h2>
-    <p>It reads only the email you have open, only when you use it, and talks directly to Google. There's no server in between and nothing is shared. See the <a href="privacy.html">privacy policy</a>.</p>
+    <section class="setup" data-device="android">
+      <h2>Android</h2>
+      <p><a class="button" href="app/">Open the app</a><br>Then tap <strong>Install</strong> (or ⋮ menu, then <strong>Add to Home screen</strong>).</p>
+      <p><strong>To use it:</strong> in any email app, select the signature, tap <strong>Share</strong>, then <strong>Email to Contacts</strong>.</p>
+    </section>
 
-    <h2>Get it</h2>
-    <p class="muted">Store links will appear here once it's published.</p>
+    <section class="setup" data-device="computer">
+      <h2>Outlook (Windows app and Outlook on the web)</h2>
+      <ol>
+        <li><a class="button small" href="outlook/manifest.xml" download="email-to-contacts-outlook.xml">Download the Outlook file</a></li>
+        <li><a href="https://aka.ms/olksideload" target="_blank" rel="noopener">Open Outlook's add-ins window</a>, click <strong>My add-ins</strong>, scroll down, then <strong>Add a custom add-in</strong> &gt; <strong>Add from File</strong>, and pick the file you downloaded.</li>
+      </ol>
+      <p><strong>To use it:</strong> open an email and click <strong>Save to contacts</strong> (under <strong>Apps</strong>; to keep it on every email, go to Settings &gt; Mail &gt; Customize actions and tick it).</p>
+
+      <h2>Edge or Chrome (Gmail, Outlook.com, iCloud Mail, Yahoo)</h2>
+      <ol>
+        <li><a class="button small" href="email-to-contacts-extension.zip" download>Download the extension</a>, then right-click the file and choose <strong>Extract All</strong>.</li>
+        <li>In the address bar, go to <code>edge://extensions</code> (Edge) or <code>chrome://extensions</code> (Chrome) and turn on <strong>Developer mode</strong>.</li>
+        <li>Click <strong>Load unpacked</strong> and pick the extracted <strong>email-to-contacts-extension</strong> folder.</li>
+      </ol>
+      <p><strong>To use it:</strong> open an email and click the blue <strong>Save to contacts</strong> button at the bottom right.</p>
+
+      <p class="muted">On a computer, the button saves a contact card. Open it to add the person: it goes into Contacts on a Mac (and your iPhone, with iCloud contacts on) or into Outlook on Windows.</p>
+    </section>
+
+    <p><a href="#" id="show-all" hidden>Setting up a different device?</a></p>
+
+    <h2>Private</h2>
+    <p>It reads only the email you click it on, and the contact is made on your own device. Nothing goes to us or anyone else. See the <a href="privacy.html">privacy policy</a>.</p>
   </main>
+  <script>
+    // Show the right setup first. Fill in SHORTCUT once the iPhone shortcut's iCloud link exists.
+    (function () {
+      var SHORTCUT = '';
+      var ua = navigator.userAgent;
+      var device = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'iphone'
+        : /Android/.test(ua) ? 'android' : 'computer';
+      var names = { iphone: 'your iPhone', android: 'your Android phone', computer: 'this computer' };
+      var sections = document.querySelectorAll('.setup');
+      for (var i = 0; i < sections.length; i++) sections[i].hidden = sections[i].getAttribute('data-device') !== device;
+      var label = document.getElementById('for');
+      label.textContent = 'Setup for ' + names[device] + ':';
+      label.hidden = false;
+      var all = document.getElementById('show-all');
+      all.hidden = false;
+      all.addEventListener('click', function (e) {
+        e.preventDefault();
+        for (var i = 0; i < sections.length; i++) sections[i].hidden = false;
+        all.hidden = true;
+        label.hidden = true;
+      });
+      if (SHORTCUT) {
+        document.getElementById('shortcut-link').href = SHORTCUT;
+        document.getElementById('shortcut-ready').hidden = false;
+        document.getElementById('shortcut-later').hidden = true;
+      }
+    })();
+  </script>
 </body>
 </html>
