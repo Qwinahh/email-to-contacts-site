@@ -23,6 +23,26 @@
     };
   }
 
+  // An email's HTML as plain text, one line per line break, block or table row.
+  function htmlToText(html) {
+    const named = { nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+    return String(html || '')
+      .replace(/<(style|script|head|title)\b[\s\S]*?<\/\1\s*>/gi, '')
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<br\b[^>]*>/gi, '\n')
+      .replace(/<\/(p|div|tr|li|h[1-6]|blockquote|table)\s*>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e) => {
+        if (e[0] !== '#') return Object.prototype.hasOwnProperty.call(named, e.toLowerCase()) ? named[e.toLowerCase()] : m;
+        const code = e[1].toLowerCase() === 'x' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        return code > 0 && code < 0x110000 ? String.fromCodePoint(code) : m;
+      })
+      .replace(/[ \t ]+/g, ' ')
+      .replace(/ *\n */g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
   // Only the reader's warnings that tell the user something to check before saving.
   function noteText(warnings, ownEmail) {
     if (ownEmail) return 'This email is from you.';
@@ -108,7 +128,7 @@
     return { status: 'saved', contact: await graph.post(GRAPH + '/me/contacts', toGraphContact(d)) };
   }
 
-  const api = { readDetails, noteText, toGraphContact, graphClient, findExisting, saveContact, PHONE_LABELS };
+  const api = { readDetails, htmlToText, noteText, toGraphContact, graphClient, findExisting, saveContact, PHONE_LABELS };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.EmailToContacts = api;
 })(typeof globalThis === 'object' ? globalThis : this);

@@ -16,10 +16,16 @@
     $('status').hidden = !text;
   }
 
-  function readBody(item) {
+  function getBody(item, type) {
     return new Promise((resolve) => {
-      item.body.getAsync(Office.CoercionType.Text, (res) => resolve(res.status === Office.AsyncResultStatus.Succeeded ? res.value : ''));
+      item.body.getAsync(type, (res) => resolve(res.status === Office.AsyncResultStatus.Succeeded ? res.value || '' : ''));
     });
+  }
+
+  // Outlook's own plain-text version can run the signature lines together, so read the HTML and keep its line breaks.
+  async function readBody(item) {
+    const html = Office.CoercionType.Html ? await getBody(item, Office.CoercionType.Html) : '';
+    return html ? Core.htmlToText(html) : getBody(item, Office.CoercionType.Text);
   }
 
   function render(d) {
