@@ -1,6 +1,6 @@
 /* Email to Contacts web app: keeps the page working offline and lets Android install it.
    Caches only the app's own files; never sees what people paste (that stays in the page). */
-const CACHE = 'email-to-contacts-v1';
+const CACHE = 'email-to-contacts-v2';
 const FILES = ['./', 'index.html', 'app.js', 'contact.js', 'parser.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 self.addEventListener('install', (event) => {

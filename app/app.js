@@ -81,13 +81,18 @@
     window.scrollTo(0, 0);
   });
 
-  // Shared from another app (Android "Share" to the installed app) arrives as ?text=… or ?title=….
-  const params = new URLSearchParams(location.search);
-  const shared = [params.get('title'), params.get('text'), params.get('url')].filter(Boolean).join('\n');
+  // Shared from another app: Android's Share menu (installed app) sends ?text=…; the iPhone Shortcut
+  // opens #text=…, which stays on the phone (the part after # is never sent to the web server).
+  // Either way the contact is saved straight away; the card stays on screen to save again if needed.
+  const fromQuery = new URLSearchParams(location.search);
+  const fromHash = new URLSearchParams(location.hash.slice(1));
+  const shared = [fromQuery.get('title'), fromQuery.get('text'), fromQuery.get('url'), fromHash.get('text')].filter(Boolean).join('\n');
   if (shared.trim()) {
     $('text').value = shared;
     show(shared);
     history.replaceState(null, '', location.pathname);
+    const card = current();
+    if (!Card.problem(card)) setStatus(save(card));
   }
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
