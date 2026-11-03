@@ -53,7 +53,18 @@
   function parseEmail(input) {
     const result = { name: '', email: '', phones: [], title: '', company: '', warnings: [] };
     const warn = s => { if (!result.warnings.includes(s)) result.warnings.push(s); };
+    let ownText = '';
     const finish = () => {
+      // No number in the signature: use one the sender gives as their own in the message
+      // ("call me on …", "my mobile is …"), unless the email names someone else.
+      if (!result.phones.length && ownText && !result.warnings.some(w => /differs|another contact|Multiple/.test(w))) {
+        const said = ownText.match(/\b(?:(?:call|ring|text|phone|reach|contact)\s+me\s+(?:on|at)|my\s+(?:(mobile|cell)\s+)?(?:(?:phone\s+)?number|phone|mobile|cell|direct line)\s*(?:is|:))\s*(\+?[\d(][\d ()\-.]{5,}\d)/i);
+        const digits = said ? said[2].replace(/\D/g, '') : '';
+        if (said && digits.length >= 7 && digits.length <= 15) {
+          result.phones.push({ label: said[1] || /\bmy\s+(?:mobile|cell)\b|\btext\s+me\b/i.test(said[0]) ? 'mobile' : 'other', number: said[2].trim() });
+          warn('Phone number taken from the message text; review it.');
+        }
+      }
       if (!result.phones.length) warn('No phone number found.');
       if (!result.email) warn('No sender email found; enter it manually.');
       return result;
@@ -100,6 +111,7 @@
       body.push(line);
     }
     while (body.length && !body[body.length - 1]) body.pop();
+    ownText = body.join('\n');
     let boundary = -1;
     const markers = [];
     body.forEach((s, i) => { if (SIGNOFF.test(s) || /^--\s*$/.test(s)) markers.push(i); });
@@ -118,10 +130,14 @@
       const realMarkers = markers.filter((m, i) => i === 0 || body.slice(markers[i - 1] + 1, m).some(Boolean));
       if (realMarkers.length > 1) { warn('Multiple signature blocks; review the sender and enter details manually.'); return finish(); }
     } else {
-      // Only a final compact block with clear contact evidence is eligible.
+      // No sign-off: a closing block that starts with the sender's full name is their signature.
+      const named = result.name.includes(' ') ? body.map((s, i) => i).filter(i => i > 0 && body[i] &&
+        signatureIdentity(body[i], result.name).toLocaleLowerCase() === result.name.toLocaleLowerCase()).pop() : undefined;
+      // Otherwise only a final compact block with clear contact evidence is eligible.
       let lastBlank = body.lastIndexOf('');
       let block = body.slice(lastBlank + 1);
-      if (block.length <= 10 && block.some(s => emails(s).length || PHONE_START.test(s) || /^(?:mobile|phone|tel|office|work|fax|m|t|p|e|email)\s*[:|]/i.test(s))) boundary = lastBlank + 1;
+      if (named !== undefined && body.length - named <= 10) boundary = named;
+      else if (block.length <= 10 && block.some(s => emails(s).length || PHONE_START.test(s) || /^(?:mobile|phone|tel|office|work|fax|m|t|p|e|email)\s*[:|]/i.test(s))) boundary = lastBlank + 1;
     }
     if (boundary < 0) { warn('No clear signature found; review and enter missing details manually.'); return finish(); }
     const signature = body.slice(boundary).filter(s => s && s !== '--');
@@ -130,7 +146,10 @@
     if (sigEmails.length > 1 || (result.email && sigEmails.some(e => e.toLowerCase() !== result.email.toLowerCase()))) {
       warn('Signature email differs from the sender or lists multiple people; review details manually.'); return finish();
     }
-    const signatureName = signatureIdentity(signature[0] || '', result.name);
+    let signatureName = signatureIdentity(signature[0] || '', result.name);
+    // Signing with just their first name ("Thanks, Sam") is still the sender.
+    if (signatureName && result.name.includes(' ') && !/\s/.test(signatureName) &&
+        signatureName.toLocaleLowerCase() === result.name.split(/\s+/)[0].toLocaleLowerCase()) signatureName = result.name;
     if (result.name && signatureName && result.name.toLocaleLowerCase() !== signatureName.toLocaleLowerCase()) {
       warn('Signature name differs from the sender name; review details manually.'); return finish();
     }
